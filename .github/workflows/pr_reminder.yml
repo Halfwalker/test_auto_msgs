@@ -1,0 +1,34 @@
+# .github/workflows/pr-reminder.yml
+name: PR Sync Reminder
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  remind:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Add sync reminder comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = `
+            🚨 **SYNC REMINDER** 🚨
+
+            Please ensure that you **merge** the changes in this PR to ops/salt-states
+            following sync documentation at **Managing Devcloud forks of prod repos**
+
+            Please do not create a separate duplicate commit/PR in upstream.
+
+            In some cases there are hard-coded values that differ between Devcloud and prod (eg. ipv6 prefix **3c0f** for prod, **3c1f** for devcloud).  For those consider conditional gating around the values.  For example :
+
+                Conditionals to check if in Devcloud or not
+                .../frr/vm/files/nodebalancer/netv4.conf.j2#L6-L15
+                .../frr/vm/files/nodebalancer/netv4.conf.j2#L39-L42
+            `
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
